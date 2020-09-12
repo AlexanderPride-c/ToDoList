@@ -30,7 +30,6 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Your Tasks" id="ZA5-nx-w43">
-                        <barButtonItem key="leftBarButtonItem" systemItem="edit" id="uow-Af-70n"/>
                         <rightBarButtonItems>
                             <barButtonItem systemItem="add" id="H1B-6D-2zM">
                                 <connections>

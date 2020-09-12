@@ -65,6 +65,12 @@ class MainTableViewController: UITableViewController {
         return appDelegate.persistentContainer.viewContext
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+          super.viewWillAppear(animated)
+          
+        
+      }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -98,5 +104,53 @@ class MainTableViewController: UITableViewController {
         return cell
     }
     
+ // MARK: SwipeCations
+    override func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let done = doneAction(at: indexPath)
+        let favourite = favouriteAction(at: indexPath)
+        
+        return UISwipeActionsConfiguration(actions: [done, favourite])
+    }
+    
+    func doneAction(at indexPath: IndexPath) -> UIContextualAction {
+        let action = UIContextualAction(style: .destructive, title: "Done") { (action, view, complition) in
+            self.tasks.remove(at: indexPath.row)
+            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            complition(true)
+        }
+        action.backgroundColor = .green
+        action.image = UIImage(systemName: "checkmark.circle")
+        return action
+    }
 
+    func favouriteAction(at indexPath: IndexPath) -> UIContextualAction {
+        let task = tasks[indexPath.row]
+        let action = UIContextualAction(style: .normal, title: "Favourite") { (action, view, completion) in
+            task.favorite = !task.favorite
+            self.tasks[indexPath.row] = task
+            completion(true)
+        }
+        action.backgroundColor = task.favorite ? .systemPurple : .systemGray
+        action.image = UIImage(systemName: "heart")
+        return action
+    }
+    
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let delete = deleteAction(at: indexPath)
+        return UISwipeActionsConfiguration(actions: [delete])
+    }
+    
+    func deleteAction(at indexPath: IndexPath) -> UIContextualAction {
+        let action = UIContextualAction(style: .destructive, title: "Delete") { (action, view, completion) in
+            self.tasks.remove(at: indexPath.row)
+            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            completion(true)
+        }
+        action.backgroundColor = .systemRed
+        action.image = UIImage(systemName: "delete.fill.left")
+        return action
+    }
+ 
 }
