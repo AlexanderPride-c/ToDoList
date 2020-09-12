@@ -23,7 +23,6 @@ class MainTableViewController: UITableViewController {
                 
                 self.tableView.reloadData()
             }
-            
         }
         
         alertController.addTextField { _ in }
@@ -34,6 +33,28 @@ class MainTableViewController: UITableViewController {
         alertController.addAction(cancel)
         
         present(alertController, animated: true, completion: nil)
+    }
+    
+   
+    
+    @IBAction func removeAll(_ sender: Any) {
+        
+        let context = getContext()
+        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+        if let objects = try? context.fetch(fetchRequest) {
+            for object in objects {
+                context.delete(object)
+                tableView.reloadData()
+            }
+        }
+        
+        do {
+            try context.save()
+            
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+        
     }
     
     private func saveTask(withTitle title: String, withFavorite favorite: Bool) {
@@ -54,10 +75,7 @@ class MainTableViewController: UITableViewController {
         }
         
     }
-    
-    @IBAction func removeAll(_ sender: Any) {
-        
-    }
+
     
     // получение контекста
     private func getContext() -> NSManagedObjectContext {
@@ -65,11 +83,21 @@ class MainTableViewController: UITableViewController {
         return appDelegate.persistentContainer.viewContext
     }
     
+    
     override func viewWillAppear(_ animated: Bool) {
-          super.viewWillAppear(animated)
-          
+        super.viewWillAppear(animated)
         
-      }
+        let context = getContext()
+        let fetchRequest: NSFetchRequest<Task> = Task.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "title", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        do {
+            tasks = try context.fetch(fetchRequest)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
     
     
     override func viewDidLoad() {
@@ -99,7 +127,6 @@ class MainTableViewController: UITableViewController {
 
         let task = tasks[indexPath.row]
         cell.textLabel?.text = task.title
-        cell.imageView?.image = UIImage(systemName: "paperclip")
         
         return cell
     }
@@ -125,10 +152,16 @@ class MainTableViewController: UITableViewController {
     }
 
     func favouriteAction(at indexPath: IndexPath) -> UIContextualAction {
+        let context = getContext()
         let task = tasks[indexPath.row]
         let action = UIContextualAction(style: .normal, title: "Favourite") { (action, view, completion) in
             task.favorite = !task.favorite
             self.tasks[indexPath.row] = task
+            do {
+                try context.save()
+            } catch let error as NSError {
+                print(error.localizedDescription)
+            }
             completion(true)
         }
         action.backgroundColor = task.favorite ? .systemPurple : .systemGray
